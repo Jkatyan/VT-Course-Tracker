@@ -112,6 +112,7 @@ CRNs = []
 for i in crns:
     CRNs.append(Course(i))
 
+print("[Course Tracking Started]")
 while True:
     for crn in CRNs:
         if crn.course.has_open_spots() != crn.open:
