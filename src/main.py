@@ -104,7 +104,6 @@ cur.close()
 # Start tracking
 class Course:
     def __init__(self, CRN):
-        self.crn = CRN
         self.course = vtt.get_crn(str(year), semester, CRN)
         self.open = self.course.has_open_spots()
         self.changed = False
@@ -123,10 +122,10 @@ while True:
 
         if crn.changed:
             if crn.open:
-                showinfo(title="Course Open", message=str(crn.crn) + ' is now available.')
+                showinfo(title="Course Open", message=str(crn.course.get_name()) + ' is now available.')
                 root.lift()
             else:
-                showerror(title="Course Closed", message=str(crn.crn) + ' is now closed.')
+                showerror(title="Course Closed", message=str(crn.course.get_name()) + ' is now closed.')
                 root.lift()
             crn.changed = False
             root.destroy()
