@@ -10,6 +10,11 @@ VT Course Tracker notifies you when your courses have seats available!
 - Hit "Start Tracking" and VT Course Tracker will run in the background.
 - When the course's status changes, VT Course Tracker will immediately notify you via a pop-up message.
 
+Required Packages:
+- tkinter
+- sqlite3
+- vtt (https://pypi.org/project/vt-timetable/)
+
 <h6>
 Made by Jay Katyan, Class of 2025
 </h6>
