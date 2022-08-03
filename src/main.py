@@ -1,12 +1,18 @@
+# Imports
+import vtt
+import time
+from datetime import date
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+from tkinter.messagebox import showerror
+from tkinter.messagebox import showinfo
 import sqlite3 as sq
 
 # Initialize tkinter GUI
-root = tk.Tk()
-root.title('VT Course Tracker')
-root.geometry("400x250+500+300")
+window = tk.Tk()
+window.title('VT Course Tracker')
+window.geometry("400x250+500+300")
 
 # Initialize database
 conn = sq.connect('crns.db')
@@ -16,16 +22,31 @@ cur.execute('create table if not exists tasks (title text)')
 # Store CRNS
 crns = []
 
+# Timetable Information
+month = date.today().month
+year = date.today().year
+
+if 1 < month < 10:
+    semester = vtt.Semester.FALL
+else:
+    semester = vtt.Semester.SPRING
+
 # GUI functions
 def add_task():
-    word = e1.get()
-    if len(word) == 0:
+    CRN = e1.get()
+    if len(CRN) == 0:
         messagebox.showinfo('Empty Entry', 'Please enter a CRN')
-    else:
-        crns.append(word)
-        cur.execute('insert into tasks values (?)', (word,))
+    elif len(CRN) != 5:
+        messagebox.showinfo('Invalid Entry', 'Please enter a valid CRN')
+    elif CRN in crns:
+        messagebox.showinfo('Duplicate Entry', 'Please enter a new CRN')
+    elif vtt.get_crn(str(year), semester, CRN):
+        crns.append(CRN)
+        cur.execute('insert into tasks values (?)', (CRN,))
         list_update()
         e1.delete(0, 'end')
+    else:
+        messagebox.showinfo('Invalid Entry', 'Please enter a valid CRN')
 
 def list_update():
     clear_list()
@@ -45,9 +66,8 @@ def del_one():
 def clear_list():
     t.delete(0, 'end')
 
-def bye():
-    print(crns)
-    root.destroy()
+def start_tracking():
+    window.destroy()
 
 def retrieve_db():
     while len(crns) != 0:
@@ -55,14 +75,14 @@ def retrieve_db():
     for row in cur.execute('select title from tasks'):
         crns.append(row[0])
 
-# Initialize geometry and initialize database
-l1 = ttk.Label(root, text='VT Course Tracker')
-l2 = ttk.Label(root, text='Enter Course CRN: ')
-e1 = ttk.Entry(root, width=21)
-t = tk.Listbox(root, height=11, selectmode='SINGLE')
-b1 = ttk.Button(root, text='Add CRN', width=20, command=add_task)
-b2 = ttk.Button(root, text='Delete CRN', width=20, command=del_one)
-b3 = ttk.Button(root, text='Start Tracking', width=20, command=del_one)
+# Initialize geometry and retrieve database
+l1 = ttk.Label(window, text='VT Course Tracker')
+l2 = ttk.Label(window, text='Enter Course CRN: ')
+e1 = ttk.Entry(window, width=21)
+t = tk.Listbox(window, height=11, selectmode='SINGLE')
+b1 = ttk.Button(window, text='Add CRN', width=20, command=add_task)
+b2 = ttk.Button(window, text='Delete CRN', width=20, command=del_one)
+b3 = ttk.Button(window, text='Start Tracking', width=20, command=start_tracking)
 
 retrieve_db()
 list_update()
@@ -76,7 +96,39 @@ b3.place(x=50, y=205)
 t.place(x=220, y=50)
 
 # Run GUI
-root.resizable(False, False)
-root.mainloop()
+window.resizable(False, False)
+window.mainloop()
 conn.commit()
 cur.close()
+
+# Start tracking
+class Course:
+    def __init__(self, CRN):
+        self.crn = CRN
+        self.course = vtt.get_crn(str(year), semester, CRN)
+        self.open = self.course.has_open_spots()
+        self.changed = False
+
+CRNs = []
+for i in crns:
+    CRNs.append(Course(i))
+
+while True:
+    for crn in CRNs:
+        if crn.course.has_open_spots() != crn.open:
+            crn.changed = True
+            crn.open = crn.course.has_open_spots()
+            root = tk.Tk()
+            root.eval('tk::PlaceWindow %s center' % root.winfo_toplevel())
+
+        if crn.changed:
+            if crn.open:
+                showinfo(title="Course Open", message=str(crn.crn) + ' is now available.')
+                root.lift()
+            else:
+                showerror(title="Course Closed", message=str(crn.crn) + ' is now closed.')
+                root.lift()
+            crn.changed = False
+            root.destroy()
+
+        time.sleep(1)
