@@ -1,5 +1,5 @@
 <div align='center'>
-  <h3>VT Course Tracker</h3>
+  <h3>Virginia Tech Course Tracker</h3>
 </div>
 
 ---
