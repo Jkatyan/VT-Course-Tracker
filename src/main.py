@@ -17,7 +17,7 @@ window.geometry("400x250+500+300")
 # Initialize database
 conn = sq.connect('crns.db')
 cur = conn.cursor()
-cur.execute('create table if not exists tasks (title text)')
+cur.execute('create table if not exists crns (title text)')
 
 # Store CRNS
 crns = []
@@ -42,7 +42,7 @@ def add_task():
         messagebox.showinfo('Duplicate Entry', 'Please enter a new CRN')
     elif vtt.get_crn(str(year), semester, CRN):
         crns.append(CRN)
-        cur.execute('insert into tasks values (?)', (CRN,))
+        cur.execute('insert into crns values (?)', (CRN,))
         list_update()
         e1.delete(0, 'end')
     else:
@@ -59,7 +59,7 @@ def del_one():
         if val in crns:
             crns.remove(val)
             list_update()
-            cur.execute('delete from tasks where title = ?', (val,))
+            cur.execute('delete from crns where title = ?', (val,))
     except:
         messagebox.showinfo('Cannot Delete', 'No CRN selected')
 
@@ -72,7 +72,7 @@ def start_tracking():
 def retrieve_db():
     while len(crns) != 0:
         crns.pop()
-    for row in cur.execute('select title from tasks'):
+    for row in cur.execute('select title from crns'):
         crns.append(row[0])
 
 # Initialize geometry and retrieve database
@@ -104,9 +104,9 @@ cur.close()
 # Start tracking
 class Course:
     def __init__(self, CRN):
+        self.CRN = CRN
         self.course = vtt.get_crn(str(year), semester, CRN)
         self.open = self.course.has_open_spots()
-        self.changed = False
 
 CRNs = []
 for i in crns:
@@ -116,19 +116,13 @@ print("[Course Tracking Started]")
 while True:
     for crn in CRNs:
         if crn.course.has_open_spots() != crn.open:
-            crn.changed = True
             crn.open = crn.course.has_open_spots()
             root = tk.Tk()
             root.eval('tk::PlaceWindow %s center' % root.winfo_toplevel())
-
-        if crn.changed:
             if crn.open:
-                showinfo(title="Course Open", message=str(crn.course.get_name()) + ' is now available.')
-                root.lift()
+                showinfo(title="Course Open", message=str(crn.course.get_name()) + ' CRN: ' + str(crn.CRN) + ' is now available.')
             else:
-                showerror(title="Course Closed", message=str(crn.course.get_name()) + ' is now closed.')
-                root.lift()
-            crn.changed = False
+                showerror(title="Course Closed", message=str(crn.course.get_name()) + ' CRN: ' + str(crn.CRN) + ' is now closed.')
             root.destroy()
 
         time.sleep(1)
