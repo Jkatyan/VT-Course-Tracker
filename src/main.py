@@ -120,9 +120,9 @@ while True:
             root = tk.Tk()
             root.eval('tk::PlaceWindow %s center' % root.winfo_toplevel())
             if crn.open:
-                showinfo(title="Course Open", message=str(crn.course.get_name()) + ' CRN: ' + str(crn.CRN) + ' is now available.')
+                showinfo(title="Course Open", message=str(crn.course.get_subject()) + ' ' + str(crn.course.get_code()) + ' CRN: ' + str(crn.CRN) + ' is now available.')
             else:
-                showerror(title="Course Closed", message=str(crn.course.get_name()) + ' CRN: ' + str(crn.CRN) + ' is now closed.')
+                showerror(title="Course Closed", message=str(crn.course.get_subject()) + ' ' + (crn.course.get_code()) + ' CRN: ' + str(crn.CRN) + ' is now closed.')
             root.destroy()
 
         time.sleep(1)
