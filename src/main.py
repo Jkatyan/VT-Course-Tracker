@@ -28,6 +28,9 @@ year = date.today().year
 
 if 1 < month < 10:
     semester = vtt.Semester.FALL
+elif 10 <= month <= 12:
+    semester = vtt.Semester.SPRING
+    year += 1
 else:
     semester = vtt.Semester.SPRING
 
